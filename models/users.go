@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"log"
 	_ "modernc.org/sqlite"
 )
@@ -63,14 +64,21 @@ func GetUsers() ([]User, error) {
 	return users, nil
 }
 
-func AddUser(Email string, Password string) error {
+func AddUser(c *gin.Context) error {
+	var newUser User
+
+	if err := c.BindJSON(&newUser); err != nil {
+		return err
+	}
+
+	fmt.Println(c.BindJSON(&newUser))
 	row, err := DB.Prepare("INSERT INTO users(email, password) VALUES (?, ?)")
 
 	if err != nil {
 		return err
 	}
 
-	_, err = row.Exec(Email, Password)
+	_, err = row.Exec(&newUser.Email, &newUser.Password)
 	if err != nil {
 		log.Fatal(err)
 	}
