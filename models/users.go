@@ -3,7 +3,8 @@ package models
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/mattn/go-sqlite3"
+	"log"
+	_ "modernc.org/sqlite"
 )
 
 var DB *sql.DB
@@ -16,7 +17,7 @@ type User struct {
 }
 
 func ConnectDatabase() error {
-	db, err := sql.Open("sqlite3", "./sqlite.db")
+	db, err := sql.Open("sqlite", "./sqlite.db")
 	if err != nil {
 		return err
 	}
@@ -60,4 +61,19 @@ func GetUsers() ([]User, error) {
 	}
 
 	return users, nil
+}
+
+func AddUser(Email string, Password string) error {
+	row, err := DB.Prepare("INSERT INTO users(email, password) VALUES (?, ?)")
+
+	if err != nil {
+		return err
+	}
+
+	_, err = row.Exec(Email, Password)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return nil
 }

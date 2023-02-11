@@ -28,7 +28,11 @@ func main() {
 }
 
 func createUser(c *gin.Context) {
-	c.JSON(200, gin.H{"message": "A new User Created!"})
+	fmt.Println(c)
+	err := models.AddUser("test@test.com", "test")
+	checkErr(err)
+
+	c.JSON(200, gin.H{"succes": "User added to the database"})
 }
 
 func getUsers(c *gin.Context) {
