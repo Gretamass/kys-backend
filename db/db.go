@@ -3,8 +3,8 @@ package db
 import (
 	"database/sql"
 	"github.com/Gretamass/kys-backend/user"
-	"log"
 	_ "modernc.org/sqlite"
+	"strings"
 )
 
 type DB struct {
@@ -66,7 +66,40 @@ func (d *DB) AddUser(user user.User) error {
 
 	_, err = row.Exec(user.Email, user.Password)
 	if err != nil {
-		log.Fatal(err)
+		return err
+	}
+
+	return nil
+}
+
+func (d *DB) UpdateUser(userId string, request user.User) error {
+	query := "UPDATE users SET "
+	var args []interface{}
+
+	if request.Email != "" {
+		query += "email = ?, "
+		args = append(args, request.Email)
+	}
+
+	if request.Password != "" {
+		query += "password = ?, "
+		args = append(args, request.Password)
+	}
+
+	query = strings.TrimRight(query, ", ")
+	query += " WHERE id = ?"
+	args = append(args, userId)
+
+	row, err := d.db.Prepare(query)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = row.Exec(args...)
+
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -81,7 +114,7 @@ func (d *DB) DeleteUser(userId int) error {
 
 	_, err = row.Exec(userId)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	return nil

@@ -30,7 +30,7 @@ func main() {
 	{
 		router.GET("/", srv.getUsers)
 		router.POST("/", srv.createUser)
-		router.PATCH("/:id", updateUser)
+		router.PATCH("/:id", srv.updateUser)
 		router.DELETE("/:id", srv.deleteUser)
 	}
 
@@ -71,7 +71,26 @@ func (s *server) createUser(c *gin.Context) {
 	c.JSON(200, gin.H{"success": "User added to the database"})
 }
 
-func updateUser(c *gin.Context) {
+func (s *server) updateUser(c *gin.Context) {
+	var request user.User
+
+	userId := c.Params.ByName("id")
+	if userId == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "user ID is required"})
+		return
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad JSON"})
+		return
+	}
+
+	err := s.db.UpdateUser(userId, request)
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+	}
+
 	c.JSON(200, gin.H{"message": "User Updated!"})
 }
 func (s *server) deleteUser(c *gin.Context) {
@@ -89,10 +108,4 @@ func (s *server) deleteUser(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{"message": "User Deleted!"})
-}
-
-func checkErr(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
 }
