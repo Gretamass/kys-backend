@@ -181,6 +181,22 @@ func (d *DB) GetAdmins() ([]user.Admin, error) {
 	return admins, nil
 }
 
+func (d *DB) GetAdminById(adminId int) (user.Admin, error) {
+	row := d.db.QueryRow("SELECT * FROM admins WHERE id = ?", adminId)
+
+	singleAdmin := user.Admin{}
+	err := row.Scan(&singleAdmin.Id, &singleAdmin.Email, &singleAdmin.Password)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return user.Admin{}, fmt.Errorf("no rows found with id %d", adminId)
+		}
+		return user.Admin{}, err
+	}
+
+	return singleAdmin, nil
+}
+
 func (d *DB) AddAdmin(admin user.Admin) error {
 	row, err := d.db.Prepare("INSERT INTO admins (email, password) VALUES (?, ?)")
 
