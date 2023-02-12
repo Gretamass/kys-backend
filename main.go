@@ -139,9 +139,14 @@ func (s *server) updateUser(c *gin.Context) {
 
 func (s *server) deleteUser(c *gin.Context) {
 	idStr := c.Params.ByName("id")
+	if idStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "user ID is required"})
+		return
+	}
+
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "user ID is required"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "incorrect ID"})
 		return
 	}
 
@@ -244,5 +249,23 @@ func (s *server) updateAdmin(c *gin.Context) {
 }
 
 func (s *server) deleteAdmin(c *gin.Context) {
+	idStr := c.Params.ByName("id")
+	if idStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "admin ID is required"})
+		return
+	}
 
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "incorrect ID"})
+		return
+	}
+
+	if err := s.db.DeleteAdmin(id); err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+
+	c.JSON(200, gin.H{"message": "Admin Deleted!"})
 }

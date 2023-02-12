@@ -142,7 +142,7 @@ func (d *DB) DeleteUser(userId int) error {
 	}
 
 	if rowsAffected == 0 {
-		return fmt.Errorf("no rows found with id %d", userId)
+		return fmt.Errorf("no users found with id %d", userId)
 	}
 
 	return nil
@@ -240,6 +240,30 @@ func (d *DB) UpdateAdmin(adminId int, request user.Admin) error {
 
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (d *DB) DeleteAdmin(adminId int) error {
+	row, err := d.db.Prepare("DELETE FROM admins WHERE id = ?")
+
+	if err != nil {
+		return err
+	}
+
+	result, err := row.Exec(adminId)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("no admins found with id %d", adminId)
 	}
 
 	return nil
