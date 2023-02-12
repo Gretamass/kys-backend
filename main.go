@@ -30,6 +30,7 @@ func main() {
 	router := r.Group("/user")
 	{
 		router.GET("/", srv.getUsers)
+		router.GET("/:id", srv.getUserById)
 		router.POST("/", srv.createUser)
 		router.PATCH("/:id", srv.updateUser)
 		router.DELETE("/:id", srv.deleteUser)
@@ -54,6 +55,25 @@ func (s *server) getUsers(c *gin.Context) {
 	} else {
 		c.JSON(200, gin.H{"data": users})
 	}
+}
+
+func (s *server) getUserById(c *gin.Context) {
+	idStr := c.Params.ByName("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "user ID is required"})
+		return
+	}
+
+	users, err := s.db.GetUserById(id)
+
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+
+	c.JSON(200, gin.H{"data": users})
 }
 
 func (s *server) createUser(c *gin.Context) {

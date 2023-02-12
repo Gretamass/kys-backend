@@ -58,6 +58,22 @@ func (d *DB) GetUsers() ([]user.User, error) {
 	return users, nil
 }
 
+func (d *DB) GetUserById(userId int) (user.User, error) {
+	row := d.db.QueryRow("SELECT * FROM users WHERE id = ?", userId)
+
+	singleUser := user.User{}
+	err := row.Scan(&singleUser.Id, &singleUser.Email, &singleUser.Password, &singleUser.CreatedAt)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return user.User{}, fmt.Errorf("no rows found with id %d", userId)
+		}
+		return user.User{}, err
+	}
+
+	return singleUser, nil
+}
+
 func (d *DB) AddUser(user user.User) error {
 	row, err := d.db.Prepare("INSERT INTO users(email, password) VALUES (?, ?)")
 
