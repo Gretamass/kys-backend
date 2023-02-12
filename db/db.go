@@ -211,3 +211,36 @@ func (d *DB) AddAdmin(admin user.Admin) error {
 
 	return nil
 }
+
+func (d *DB) UpdateAdmin(adminId int, request user.Admin) error {
+	query := "UPDATE admins SET "
+	var args []interface{}
+
+	if request.Email != "" {
+		query += "email = ?, "
+		args = append(args, request.Email)
+	}
+
+	if request.Password != "" {
+		query += "password = ?, "
+		args = append(args, request.Password)
+	}
+
+	query = strings.TrimRight(query, ", ")
+	query += " WHERE id = ?"
+	args = append(args, adminId)
+
+	row, err := d.db.Prepare(query)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = row.Exec(args...)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
