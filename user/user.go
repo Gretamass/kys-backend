@@ -6,7 +6,3 @@ type User struct {
 	Password  string `json:"password"`
 	CreatedAt string `json:"createdAt"`
 }
-
-type DeleteRequest struct {
-	Id int `json:"id"`
-}

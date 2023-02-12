@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/Gretamass/kys-backend/user"
 	_ "modernc.org/sqlite"
 	"strings"
@@ -72,7 +73,7 @@ func (d *DB) AddUser(user user.User) error {
 	return nil
 }
 
-func (d *DB) UpdateUser(userId string, request user.User) error {
+func (d *DB) UpdateUser(userId int, request user.User) error {
 	query := "UPDATE users SET "
 	var args []interface{}
 
@@ -106,15 +107,24 @@ func (d *DB) UpdateUser(userId string, request user.User) error {
 }
 
 func (d *DB) DeleteUser(userId int) error {
-	row, err := d.db.Prepare("DELETE FROM users WHERE id=?")
+	row, err := d.db.Prepare("DELETE FROM users WHERE id = ?")
 
 	if err != nil {
 		return err
 	}
 
-	_, err = row.Exec(userId)
+	result, err := row.Exec(userId)
 	if err != nil {
 		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("no rows found with id %d", userId)
 	}
 
 	return nil

@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type server struct {
@@ -37,6 +38,7 @@ func main() {
 	r.Run()
 }
 
+// USER handlers
 func (s *server) getUsers(c *gin.Context) {
 	users, err := s.db.GetUsers()
 
@@ -66,6 +68,7 @@ func (s *server) createUser(c *gin.Context) {
 	if err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
 	}
 
 	c.JSON(200, gin.H{"success": "User added to the database"})
@@ -74,8 +77,9 @@ func (s *server) createUser(c *gin.Context) {
 func (s *server) updateUser(c *gin.Context) {
 	var request user.User
 
-	userId := c.Params.ByName("id")
-	if userId == "" {
+	idStr := c.Params.ByName("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "user ID is required"})
 		return
 	}
@@ -85,26 +89,27 @@ func (s *server) updateUser(c *gin.Context) {
 		return
 	}
 
-	err := s.db.UpdateUser(userId, request)
-	if err != nil {
+	if err := s.db.UpdateUser(id, request); err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
 	}
 
 	c.JSON(200, gin.H{"message": "User Updated!"})
 }
-func (s *server) deleteUser(c *gin.Context) {
-	var request user.DeleteRequest
 
-	if err := c.BindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "bad JSON"})
+func (s *server) deleteUser(c *gin.Context) {
+	idStr := c.Params.ByName("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "user ID is required"})
 		return
 	}
 
-	err := s.db.DeleteUser(request.Id)
-	if err != nil {
+	if err := s.db.DeleteUser(id); err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
 	}
 
 	c.JSON(200, gin.H{"message": "User Deleted!"})
