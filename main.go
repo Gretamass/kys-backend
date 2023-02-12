@@ -27,13 +27,22 @@ func main() {
 	r := gin.Default()
 	r.SetTrustedProxies([]string{"192.168.68.102"})
 
-	router := r.Group("/user")
+	userRouter := r.Group("/user")
 	{
-		router.GET("/", srv.getUsers)
-		router.GET("/:id", srv.getUserById)
-		router.POST("/", srv.createUser)
-		router.PATCH("/:id", srv.updateUser)
-		router.DELETE("/:id", srv.deleteUser)
+		userRouter.GET("/", srv.getUsers)
+		userRouter.GET("/:id", srv.getUserById)
+		userRouter.POST("/", srv.createUser)
+		userRouter.PATCH("/:id", srv.updateUser)
+		userRouter.DELETE("/:id", srv.deleteUser)
+	}
+
+	adminRouter := r.Group("/admin")
+	{
+		adminRouter.GET("/", srv.getAdmins)
+		adminRouter.GET("/:id", srv.getAdminById)
+		adminRouter.POST("/", srv.createAdmin)
+		adminRouter.PATCH("/:id", srv.updateAdmin)
+		adminRouter.DELETE("/:id", srv.deleteAdmin)
 	}
 
 	r.Run()
@@ -133,4 +142,52 @@ func (s *server) deleteUser(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{"message": "User Deleted!"})
+}
+
+// ADMIN handlers
+func (s *server) getAdmins(c *gin.Context) {
+	admins, err := s.db.GetAdmins()
+
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+
+	if admins == nil || len(admins) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "No Admins Found"})
+		return
+	} else {
+		c.JSON(http.StatusOK, gin.H{"data": admins})
+	}
+}
+
+func (s *server) getAdminById(c *gin.Context) {
+
+}
+
+func (s *server) createAdmin(c *gin.Context) {
+	var newAdmin user.Admin
+
+	if err := c.BindJSON(&newAdmin); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad JSON"})
+		return
+	}
+
+	err := s.db.AddAdmin(newAdmin)
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+
+	c.JSON(200, gin.H{"success": "Admin added to the database"})
+}
+
+func (s *server) updateAdmin(c *gin.Context) {
+
+}
+
+func (s *server) deleteAdmin(c *gin.Context) {
+
 }

@@ -27,6 +27,8 @@ func ConnectDatabase() (*DB, error) {
 	}, nil
 }
 
+// USER methods
+
 func (d *DB) GetUsers() ([]user.User, error) {
 	rows, err := d.db.Query("SELECT * FROM users")
 
@@ -75,7 +77,7 @@ func (d *DB) GetUserById(userId int) (user.User, error) {
 }
 
 func (d *DB) AddUser(user user.User) error {
-	row, err := d.db.Prepare("INSERT INTO users(email, password) VALUES (?, ?)")
+	row, err := d.db.Prepare("INSERT INTO users (email, password) VALUES (?, ?)")
 
 	if err != nil {
 		return err
@@ -141,6 +143,54 @@ func (d *DB) DeleteUser(userId int) error {
 
 	if rowsAffected == 0 {
 		return fmt.Errorf("no rows found with id %d", userId)
+	}
+
+	return nil
+}
+
+// ADMIN methods
+
+func (d *DB) GetAdmins() ([]user.Admin, error) {
+	rows, err := d.db.Query("SELECT * FROM admins")
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	admins := make([]user.Admin, 0)
+
+	for rows.Next() {
+		singleAdmin := user.Admin{}
+		err = rows.Scan(&singleAdmin.Id, &singleAdmin.Email, &singleAdmin.Password)
+
+		if err != nil {
+			return nil, err
+		}
+
+		admins = append(admins, singleAdmin)
+	}
+
+	err = rows.Err()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return admins, nil
+}
+
+func (d *DB) AddAdmin(admin user.Admin) error {
+	row, err := d.db.Prepare("INSERT INTO admins (email, password) VALUES (?, ?)")
+
+	if err != nil {
+		return err
+	}
+
+	_, err = row.Exec(admin.Email, admin.Password)
+	if err != nil {
+		return err
 	}
 
 	return nil
