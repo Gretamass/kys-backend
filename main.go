@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/Gretamass/kys-backend/db"
 	"github.com/Gretamass/kys-backend/user"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -44,6 +46,15 @@ func main() {
 		adminRouter.PATCH("/:id", srv.updateAdmin)
 		adminRouter.DELETE("/:id", srv.deleteAdmin)
 	}
+
+	loginRouter := r.Group("/login")
+	{
+		loginRouter.POST("/", srv.loginUser)
+	}
+
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	r.Use(cors.New(config))
 
 	r.Run()
 }
@@ -157,6 +168,42 @@ func (s *server) deleteUser(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{"message": "User Deleted!"})
+}
+
+func (s *server) loginUser(c *gin.Context) {
+	var user user.User
+
+	if err := c.BindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad JSON"})
+		return
+	}
+
+	userExists, err := s.db.LoginUser(user)
+
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+
+	if userExists != true {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "incorrect email or password"})
+		return
+	}
+
+	// generate JWT with user ID as claim
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": user.Id,
+	})
+
+	// sign the token with a secret key
+	signedToken, err := token.SignedString([]byte("mysecretkey"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, gin.H{"token": signedToken})
 }
 
 // ADMIN handlers

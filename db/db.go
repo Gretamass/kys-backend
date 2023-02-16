@@ -148,6 +148,18 @@ func (d *DB) DeleteUser(userId int) error {
 	return nil
 }
 
+func (d *DB) LoginUser(user user.User) (bool, error) {
+	var userExists bool
+
+	query := "SELECT EXISTS(SELECT 1 FROM users WHERE email=? AND password=?)"
+	err := d.db.QueryRow(query, user.Email, user.Password).Scan(&userExists)
+	if err != nil {
+		return false, err
+	}
+
+	return userExists, nil
+}
+
 // ADMIN methods
 
 func (d *DB) GetAdmins() ([]user.Admin, error) {
