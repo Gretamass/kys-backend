@@ -58,6 +58,21 @@ func main() {
 		sneakerRouter.GET("/info", srv.getSneakersInfo)
 		sneakerRouter.GET("/:id", srv.getSneakerInfo)
 		sneakerRouter.GET("/availability", srv.getSneakersAvailability)
+		//TODO: add missing routers
+		//sneakerRouter.GET("/:id", srv.getSneakerById)
+		//sneakerRouter.POST("/", srv.createSneaker)
+		//sneakerRouter.PATCH("/:id", srv.updateSneaker)
+		//sneakerRouter.DELETE("/:id", srv.deleteSneaker)
+	}
+
+	providerRouter := r.Group("/provider")
+	{
+		providerRouter.GET("/", srv.getProviders)
+		providerRouter.GET("/:id", srv.getProviderById)
+		//TODO: add missing routers
+		//providerRouter.POST("/", srv.createProvider)
+		//providerRouter.PATCH("/:id", srv.updateProvider)
+		//providerRouter.DELETE("/:id", srv.deleteProvider)
 	}
 
 	config := cors.DefaultConfig()
@@ -399,4 +414,46 @@ func (s *server) getSneakersAvailability(c *gin.Context) {
 	} else {
 		c.JSON(200, gin.H{"data": sneakers})
 	}
+}
+
+// PROVIDER handlers
+func (s *server) getProviders(c *gin.Context) {
+	sneakers, err := s.db.GetProviders()
+
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+
+	if sneakers == nil {
+		c.JSON(404, gin.H{"error": "No Providers Found"})
+		return
+	} else {
+		c.JSON(200, gin.H{"data": sneakers})
+	}
+}
+
+func (s *server) getProviderById(c *gin.Context) {
+	idStr := c.Params.ByName("id")
+	if idStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "provider ID is required"})
+		return
+	}
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "incorrect ID"})
+		return
+	}
+
+	providerInfo, err := s.db.GetProviderById(id)
+
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+
+	c.JSON(200, gin.H{"data": providerInfo})
 }

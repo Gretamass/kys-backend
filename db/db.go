@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"github.com/Gretamass/kys-backend/provider"
 	"github.com/Gretamass/kys-backend/sneaker"
 	"github.com/Gretamass/kys-backend/user"
 	_ "modernc.org/sqlite"
@@ -408,4 +409,53 @@ func (d *DB) GetSneakersAvailability() ([]sneaker.SneakerAvailability, error) {
 	}
 
 	return sneakers, nil
+}
+
+// PROVIDER methods
+
+func (d *DB) GetProviders() ([]provider.ProviderInformation, error) {
+	rows, err := d.db.Query("SELECT * FROM product_providers")
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	providers := make([]provider.ProviderInformation, 0)
+
+	for rows.Next() {
+		singleProvider := provider.ProviderInformation{}
+		err = rows.Scan(&singleProvider.Id, &singleProvider.ProviderName)
+
+		if err != nil {
+			return nil, err
+		}
+
+		providers = append(providers, singleProvider)
+	}
+
+	err = rows.Err()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return providers, nil
+}
+
+func (d *DB) GetProviderById(providerId int) (provider.ProviderInformation, error) {
+	row := d.db.QueryRow("SELECT * FROM product_providers WHERE id = ?", providerId)
+
+	singleProvider := provider.ProviderInformation{}
+	err := row.Scan(&singleProvider.Id, &singleProvider.ProviderName)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return provider.ProviderInformation{}, fmt.Errorf("no rows found with id %d", providerId)
+		}
+		return provider.ProviderInformation{}, err
+	}
+
+	return singleProvider, nil
 }
