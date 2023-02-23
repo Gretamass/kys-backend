@@ -52,6 +52,14 @@ func main() {
 		loginRouter.POST("/", srv.loginUser)
 	}
 
+	sneakerRouter := r.Group("/sneaker")
+	{
+		sneakerRouter.GET("/", srv.getSneakers)
+		sneakerRouter.GET("/info", srv.getSneakersInfo)
+		sneakerRouter.GET("/:id", srv.getSneakerInfo)
+		sneakerRouter.GET("/availability", srv.getSneakersAvailability)
+	}
+
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
 	r.Use(cors.New(config))
@@ -315,4 +323,80 @@ func (s *server) deleteAdmin(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{"message": "Admin Deleted!"})
+}
+
+// SNEAKER handlers
+func (s *server) getSneakers(c *gin.Context) {
+	sneakers, err := s.db.GetSneakers()
+
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+
+	if sneakers == nil {
+		c.JSON(404, gin.H{"error": "No Sneakers Found"})
+		return
+	} else {
+		c.JSON(200, gin.H{"data": sneakers})
+	}
+}
+
+func (s *server) getSneakersInfo(c *gin.Context) {
+	sneakers, err := s.db.GetSneakersInfo()
+
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+
+	if sneakers == nil {
+		c.JSON(404, gin.H{"error": "No Sneakers Found"})
+		return
+	} else {
+		c.JSON(200, gin.H{"data": sneakers})
+	}
+}
+
+func (s *server) getSneakerInfo(c *gin.Context) {
+	idStr := c.Params.ByName("id")
+	if idStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "sneaker ID is required"})
+		return
+	}
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "incorrect ID"})
+		return
+	}
+
+	sneakerInfo, err := s.db.GetSneakerInfo(id)
+
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+
+	c.JSON(200, gin.H{"data": sneakerInfo})
+}
+
+func (s *server) getSneakersAvailability(c *gin.Context) {
+	sneakers, err := s.db.GetSneakersAvailability()
+
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+
+	if sneakers == nil {
+		c.JSON(404, gin.H{"error": "No Sneakers Found"})
+		return
+	} else {
+		c.JSON(200, gin.H{"data": sneakers})
+	}
 }
