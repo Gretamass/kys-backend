@@ -58,6 +58,7 @@ func main() {
 		sneakerRouter.GET("/info", srv.getSneakersInfo)
 		sneakerRouter.GET("/:id", srv.getSneakerInfo)
 		sneakerRouter.GET("/availability", srv.getSneakersAvailability)
+		sneakerRouter.GET("/:id/scrapper", srv.getSneakerScrapper)
 		//TODO: add missing routers
 		//sneakerRouter.GET("/:id", srv.getSneakerById)
 		//sneakerRouter.POST("/", srv.createSneaker)
@@ -414,6 +415,30 @@ func (s *server) getSneakersAvailability(c *gin.Context) {
 	} else {
 		c.JSON(200, gin.H{"data": sneakers})
 	}
+}
+
+func (s *server) getSneakerScrapper(c *gin.Context) {
+	idStr := c.Params.ByName("id")
+	if idStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "sneaker ID is required"})
+		return
+	}
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "incorrect ID"})
+		return
+	}
+
+	sneakerInfo, err := s.db.GetSneakerScrapper(id)
+
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+
+	c.JSON(200, gin.H{"data": sneakerInfo})
 }
 
 // PROVIDER handlers

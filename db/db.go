@@ -411,6 +411,54 @@ func (d *DB) GetSneakersAvailability() ([]sneaker.SneakerAvailability, error) {
 	return sneakers, nil
 }
 
+func (d *DB) GetSneakerScrapper(sneakerId int) ([]sneaker.AvailabilityScrappers, error) {
+	query := `
+        SELECT s.*, avs.*
+        FROM sneakers s
+        JOIN availability_scrappers avs ON s.id = avs.product_id 
+        WHERE s.id = ?;
+    `
+	rows, err := d.db.Query(query, sneakerId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	sneakersMap := make(map[int]sneaker.AvailabilityScrappers)
+
+	for rows.Next() {
+		singleSneaker := sneaker.AvailabilityScrappers{}
+		scrapper := sneaker.Scrapper{}
+		err = rows.Scan(&singleSneaker.Id, &singleSneaker.Name, &singleSneaker.Brand, &singleSneaker.Model,
+			&scrapper.Id, &scrapper.ProductId, &scrapper.ProviderId, &scrapper.SearchFor)
+
+		if err != nil {
+			return nil, err
+		}
+
+		// Check if we've already added the scrapper to the map
+		if existingSneaker, ok := sneakersMap[singleSneaker.Id]; ok {
+			// Add the scrapper to the existing scrapper's array
+			existingSneaker.Scrapper = append(existingSneaker.Scrapper, scrapper)
+			sneakersMap[singleSneaker.Id] = existingSneaker
+		} else {
+			// Add the scrapper to the map
+			singleSneaker.Scrapper = []sneaker.Scrapper{scrapper}
+			sneakersMap[singleSneaker.Id] = singleSneaker
+		}
+	}
+
+	// Convert the map to an array
+	sneakers := make([]sneaker.AvailabilityScrappers, 0, len(sneakersMap))
+	for _, value := range sneakersMap {
+		sneakers = append(sneakers, value)
+	}
+
+	return sneakers, nil
+}
+
 // PROVIDER methods
 
 func (d *DB) GetProviders() ([]provider.ProviderInformation, error) {

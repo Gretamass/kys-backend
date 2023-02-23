@@ -48,11 +48,22 @@ type Availability struct {
 	Price      float32 `json:"price"`
 }
 
+type AvailabilityScrappers struct {
+	Id       int        `json:"id"`
+	Name     string     `json:"name"`
+	Model    string     `json:"model"`
+	Brand    string     `json:"brand"`
+	Scrapper []Scrapper `json:"scrapper"`
+}
+
 type ProviderInformation struct {
 	Price     float64 `json:"price"`
 	Available bool    `json:"available"`
 }
 
-type AvailabilityScrappers struct {
-	SearchFor string `json:"search_for"`
+type Scrapper struct {
+	Id         int    `json:"id"`
+	ProductId  int    `json:"productId"`
+	ProviderId int    `json:"providerId"`
+	SearchFor  string `json:"search_for"`
 }
