@@ -1,10 +1,11 @@
 package sneaker
 
 type Sneaker struct {
-	Id    int    `json:"id"`
-	Name  string `json:"name"`
-	Model string `json:"model"`
-	Brand string `json:"brand"`
+	Id       int    `json:"id"`
+	Name     string `json:"name"`
+	Model    string `json:"model"`
+	Brand    string `json:"brand"`
+	ImageUrl string `json:"imageUrl"`
 	//Description         string `json:"description"`
 	//ProviderInformation map[string]struct {
 	//	ProviderInformation
@@ -19,6 +20,7 @@ type SneakerInformation struct {
 	Name               string      `json:"name"`
 	Model              string      `json:"model"`
 	Brand              string      `json:"brand"`
+	ImageUrl           string      `json:"imageUrl"`
 	SneakerInformation SneakerInfo `json:"sneakerInformation"`
 	//AvailabilityScrappers map[string]struct {
 	//	AvailabilityScrappers
@@ -37,6 +39,7 @@ type SneakerAvailability struct {
 	Name         string         `json:"name"`
 	Model        string         `json:"model"`
 	Brand        string         `json:"brand"`
+	ImageUrl     string         `json:"imageUrl"`
 	Availability []Availability `json:"availability"`
 }
 
@@ -53,6 +56,7 @@ type AvailabilityScrappers struct {
 	Name     string     `json:"name"`
 	Model    string     `json:"model"`
 	Brand    string     `json:"brand"`
+	ImageUrl string     `json:"imageUrl"`
 	Scrapper []Scrapper `json:"scrapper"`
 }
 

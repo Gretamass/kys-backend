@@ -298,7 +298,7 @@ func (d *DB) GetSneakers() ([]sneaker.Sneaker, error) {
 
 	for rows.Next() {
 		singleSneaker := sneaker.Sneaker{}
-		err = rows.Scan(&singleSneaker.Id, &singleSneaker.Name, &singleSneaker.Model, &singleSneaker.Brand)
+		err = rows.Scan(&singleSneaker.Id, &singleSneaker.Name, &singleSneaker.Model, &singleSneaker.Brand, &singleSneaker.ImageUrl)
 
 		if err != nil {
 			return nil, err
@@ -329,7 +329,7 @@ func (d *DB) GetSneakersInfo() ([]sneaker.SneakerInformation, error) {
 
 	for rows.Next() {
 		singleSneaker := sneaker.SneakerInformation{}
-		err = rows.Scan(&singleSneaker.Id, &singleSneaker.Name, &singleSneaker.Brand, &singleSneaker.Model,
+		err = rows.Scan(&singleSneaker.Id, &singleSneaker.Name, &singleSneaker.Model, &singleSneaker.Brand, &singleSneaker.ImageUrl,
 			&singleSneaker.SneakerInformation.SneakerId, &singleSneaker.SneakerInformation.MainInfo,
 			&singleSneaker.SneakerInformation.MainImageUrl, &singleSneaker.SneakerInformation.AdditionalInfo)
 
@@ -359,7 +359,7 @@ func (d *DB) GetSneakerInfo(sneakerId int) (*sneaker.SneakerInformation, error) 
 	row := d.db.QueryRow(query, sneakerId)
 
 	sneaker := &sneaker.SneakerInformation{}
-	err := row.Scan(&sneaker.Id, &sneaker.Name, &sneaker.Brand, &sneaker.Model, &sneaker.SneakerInformation.SneakerId,
+	err := row.Scan(&sneaker.Id, &sneaker.Name, &sneaker.Model, &sneaker.Brand, &sneaker.ImageUrl, &sneaker.SneakerInformation.SneakerId,
 		&sneaker.SneakerInformation.MainInfo, &sneaker.SneakerInformation.MainImageUrl, &sneaker.SneakerInformation.AdditionalInfo)
 	if err != nil {
 		return nil, err
@@ -382,7 +382,7 @@ func (d *DB) GetSneakersAvailability() ([]sneaker.SneakerAvailability, error) {
 	for rows.Next() {
 		singleSneaker := sneaker.SneakerAvailability{}
 		availability := sneaker.Availability{}
-		err = rows.Scan(&singleSneaker.Id, &singleSneaker.Name, &singleSneaker.Brand, &singleSneaker.Model,
+		err = rows.Scan(&singleSneaker.Id, &singleSneaker.Name, &singleSneaker.Model, &singleSneaker.Brand, &singleSneaker.ImageUrl,
 			&availability.Id, &availability.ProductId, &availability.ProviderId,
 			&availability.Price, &availability.Available)
 
@@ -431,7 +431,7 @@ func (d *DB) GetSneakerScrapper(sneakerId int) ([]sneaker.AvailabilityScrappers,
 	for rows.Next() {
 		singleSneaker := sneaker.AvailabilityScrappers{}
 		scrapper := sneaker.Scrapper{}
-		err = rows.Scan(&singleSneaker.Id, &singleSneaker.Name, &singleSneaker.Brand, &singleSneaker.Model,
+		err = rows.Scan(&singleSneaker.Id, &singleSneaker.Name, &singleSneaker.Model, &singleSneaker.Brand, &singleSneaker.ImageUrl,
 			&scrapper.Id, &scrapper.ProductId, &scrapper.ProviderId, &scrapper.SearchFor)
 
 		if err != nil {
